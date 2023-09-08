@@ -1,32 +1,64 @@
-import React, {useState} from 'react';
-import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
-import {useLocalSearchParams} from "expo-router";
-import userJson from '../../../assets/data/user.json';
+import React, {useLayoutEffect} from 'react';
+import {ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {useLocalSearchParams, useNavigation} from "expo-router";
 import {User} from "@/types";
+import ExperienceListItem from "@/components/ExperienceListItem";
+import {gql, useQuery} from "@apollo/client";
 
+const query = gql`
+query MyQuery($id: ID!) {
+  profile(id: $id) {
+    id
+    name
+    image
+    position
+    about
+    backimage
+    experience {
+      id
+      companyname
+      companyimage
+      title
+      userid
+    }
+  }
+}
+`
 const UserProfile = () => {
 
     const {id} = useLocalSearchParams();
+    const navigation = useNavigation();
 
-    const [user, setUser] = useState<User>(userJson);
+    const {data, loading, error} = useQuery(query, {variables: {id}});
+    const user = data?.profile as User;
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            title: user?.name || 'User'
+        })
+    }, [user?.name]);
+
+    if (loading) return <ActivityIndicator/>;
+    if (error) return <Text>Something went wrong!</Text>;
+
 
     const onConnect = () => {
 
     }
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
             {/*    Header */}
             <View style={styles.header}>
                 {/*    BG image*/}
-                <Image source={{uri: user.backImage}} style={styles.backImage}/>
+                <Image source={{uri: user.backimage}} style={styles.backImage}/>
                 <View style={styles.headerContent}>
                     {/*    Profile image*/}
                     <Image source={{uri: user.image}} style={styles.image}/>
 
                     {/*    Name and Position*/}
                     <Text style={styles.name}>{user.name}</Text>
-                    <Text >{user.position}</Text>
+                    <Text>{user.position}</Text>
 
                     {/*    Connect button*/}
                     <Pressable onPress={onConnect} style={styles.button}>
@@ -36,18 +68,24 @@ const UserProfile = () => {
                 </View>
             </View>
             {/*    About */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>About</Text>
-                    <Text style={styles.paragraph}>{user.about}</Text>
-                </View>
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>About</Text>
+                <Text style={styles.paragraph}>{user.about}</Text>
+            </View>
             {/*    Experience */}
-        </View>
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Experience</Text>
+                {user.experience?.map((experience) => <ExperienceListItem key={experience.id}
+                                                                          experience={experience}/>)}
+            </View>
+        </ScrollView>
     );
 }
 const styles = StyleSheet.create({
     container: {},
     header: {
-        backgroundColor: 'white'
+        backgroundColor: 'white',
+        marginBottom: 5
     },
     backImage: {
         width: '100%',
@@ -83,7 +121,7 @@ const styles = StyleSheet.create({
     section: {
         backgroundColor: 'white',
         padding: 10,
-        marginVertical: 10,
+        marginVertical: 5,
     },
     sectionTitle: {
         fontSize: 18,

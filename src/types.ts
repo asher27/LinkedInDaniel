@@ -4,7 +4,7 @@ export type Post = {
     content: string;
     image?: string;
     likes: number;
-    author: User;
+    profile: User;
 }
 
 export type User = {
@@ -12,6 +12,15 @@ export type User = {
     name: string;
     position: string;
     image?: string;
-    backImage?: string;
+    backimage?: string;
     about?: string;
+
+    experience?: Experience [];
+}
+
+export type Experience = {
+    id: string;
+    title: string;
+    companyname: string;
+    companyimage?: string;
 }

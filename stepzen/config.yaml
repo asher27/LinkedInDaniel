@@ -1,0 +1,4 @@
+configurationset:
+  - configuration:
+      name: postgresql_config
+      uri: postgresql://ep-cold-mouse-75754044.ap-southeast-1.aws.neon.tech/neondb?user=asher27&password=2KrxpwNRe8gF
